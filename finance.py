@@ -1,8 +1,9 @@
+from numpy.core.defchararray import startswith
 import pandas
-import datetime
 import numpy
 from sklearn.linear_model import LinearRegression
 
+companies = pandas.read_csv('data/us-companies.csv', sep=';', header=0)
 #balance = pandas.read_csv('data/us-balance-annual.csv', sep=';', header=0, index_col=[0,3])
 #cashflows = pandas.read_csv('data/us-cashflow-annual.csv', sep=';', header=0, index_col=[0,3])
 #income = pandas.read_csv('data/us-income-annual.csv', sep=';', header=0, index_col=[0])
@@ -38,20 +39,15 @@ def beta_cov(price_data1:pandas.DataFrame, price_data2:pandas.DataFrame):
     variance = numpy.var(x)
     return covariance/variance
 
-ebay = get_data("ebay", "2019-01-01", "2020-01-01")
-amzn = get_data("amzn", "2019-01-01", "2020-01-01")
-aapl = get_data("aapl", "2019-01-01", "2020-01-01")
-goog = get_data("goog", "2019-01-01", "2020-01-01")
+
+start = "2019-01-01"
+end = "2020-01-01"
 spy = get_data("SPY", "2019-01-01", "2020-01-01")
-print("----------")
-print(beta_cov(ebay, spy))
-print(beta_slope(ebay, spy))
-print("----------")
-print(beta_cov(amzn, spy))
-print(beta_slope(amzn, spy))
-print("----------")
-print(beta_cov(aapl, spy))
-print(beta_slope(aapl, spy))
-print("----------")
-print(beta_cov(goog, spy))
-print(beta_slope(goog, spy))
+for company in companies.iterrows():
+    ticker = company[1][0]
+    try:
+        company_data = get_data(ticker, start, end)
+        beta = beta_cov(company_data, spy)
+        print("{}: {}".format(ticker, beta))
+    except KeyError:
+        print("{} not found.".format(ticker))
