@@ -8,24 +8,22 @@ class portfolio:
         self.value = cash
         self.cash = cash
         self.portfolio = {}
-        self.reader = csv.reader(open(file_name), delimiter=',')
-        self.writer = csv.writer(open(file_name), delimiter=',')
+        self.writer = csv.writer(open(file_name, 'w'), delimiter=',')
         self.cur_day = start_date
-        self.prices_df = prices_df
+        self.prices_df = prices_df.set_index('Date', drop=True, append=True, inplace=False)
     
     # dollar amount takes precedence over shares
-    def buy(self, ticker, shares, dollar_amount=None):
+    def buy(self, ticker, shares=100, dollar_amount=None):
         if (ticker not in self.portfolio.keys()):
             self.portfolio[ticker] = 0
-
         try:
-            cur_price = self.prices_df.loc[ticker, self.cur_day]['Close']
+            cur_price = self.prices_df.loc[ticker, self.cur_day.strftime("%Y-%m-%d")]['Close']
         except:
-            raise IndexError("Couldn't find closing price on when trying to buy {}".format(ticker))
+            raise IndexError("Couldn't find closing price on when trying to buy {} on {}".format(ticker, self.cur_day.strftime("%Y-%m-%d")))
 
         if (dollar_amount != None):
             if (dollar_amount > self.cash):
-                raise ValueError('Cannot purchase ${} of {} on {} '.format(dollar_amount, ticker, self.cur_day))
+                raise ValueError('You do not have enough cash to purchase ${} of {}'.format(dollar_amount, ticker))
             units = dollar_amount / cur_price
             self.portfolio[ticker] = self.portfolio[ticker] + units
             self.upload_trade(0, ticker, self.cur_day, units)
@@ -33,25 +31,27 @@ class portfolio:
 
         else:
             if (shares * cur_price > self.cash):
-                raise ValueError('Cannot purchase {} shares of {} on {} '.format(shares, ticker, self.cur_day))
+                raise ValueError('You do not have enough cash to purchase {} shares of {}'.format(shares, ticker))
             self.portfolio[ticker] = self.portfolio[ticker] + shares
             self.upload_trade(0, ticker, self.cur_day, shares)
             self.cash -= shares * cur_price
 
+        self.update_value()
+
     #dollar amount takes precedence over shares
-    def sell(self, ticker, shares, dollar_amount=None):
+    def sell(self, ticker, shares=100, dollar_amount=None):
         if (ticker not in self.portfolio.keys()):
             raise ValueError('You do not own shares of {} and cannot sell it'.format(ticker))
 
         try:
-            close_price = self.prices_df.loc[ticker, self.cur_day]['Close']
+            cur_price = self.prices_df.loc[ticker, self.cur_day.strftime("%Y-%m-%d")]['Close']
         except:
             raise IndexError("Couldn't find closing price on when trying to sell {}".format(ticker))
 
         if (dollar_amount != None):
-            if (self.portfolio[ticker] * close_price < dollar_amount):
-                raise ValueError('Cannot sell {} shares of {} on {} '.format(shares, ticker, self.cur_day))
-            units = dollar_amount / close_price
+            if (self.portfolio[ticker] * cur_price < dollar_amount):
+                raise ValueError('You do not have ${} of {} to sell'.format(dollar_amount, ticker))
+            units = dollar_amount / cur_price
             self.portfolio[ticker] = self.portfolio[ticker] - units
             self.upload_trade(1, ticker, self.cur_day, units)
             self.cash += dollar_amount
@@ -61,22 +61,25 @@ class portfolio:
                 raise ValueError("You do not have enough shares of {} to sell!".format(ticker))
             self.portfolio[ticker] = self.portfolio[ticker] - shares
             self.upload_trade(1, ticker, self.cur_day, shares)
-            self.cash += shares * close_price
+            self.cash += shares * cur_price
+
+        self.update_value()
 
     def upload_trade(self, trade, ticker, date, shares):
         trade_type = ['Buy', 'Sell']
         self.writer.writerow([ticker, trade_type[trade], date, shares])
 
     def update_value(self):
-        value = self.cash
+        self.value = self.cash
         for ticker, shares in self.portfolio.items():
             try:
-                share_value = self.prices_df.loc[ticker, self.cur_day]['Close']
-                value += share_value * shares
+                share_price = self.prices_df.loc[ticker, self.cur_day.strftime("%Y-%m-%d")]['Close']
+                self.value = self.value + (share_price * shares)
             except (ValueError, KeyError):
-                print("Couldn't find the share price when calculating value of portfolio!")
+                raise IndexError("Couldn't find the share price when calculating value of portfolio!")
+        return self.value
 
-    def update(self):
+    def new_day(self):
         self.cur_day + timedelta(days=1)
         self.update_value()
 
