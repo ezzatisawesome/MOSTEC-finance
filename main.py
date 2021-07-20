@@ -2,6 +2,8 @@ from datetime import datetime
 from backtest import portfolio
 from finance import get_data, monthly_data, beta_cov
 import pandas
+import matplotlib.pyplot
+import numpy
 
 company_list_url = 'data/test1.csv'
 company_list = pandas.read_csv(company_list_url, sep=',', header=0)
@@ -47,8 +49,19 @@ print(sorted_beta_data)
 test_hello = {'ABT': 0.4449378671376737, 'ACN': 0.7322539352754748, 'ATVI': 0.7794778666942336, 'ADM': 0.7932822233625583, 'MMM': 0.8040232419762925, 'ADBE': 1.0681818947675954, 'AOS': 1.1070175677209382, 'ABMD': 1.1816852081738856}
 
 for ticker in test_hello:
-    low_vol_port.buy(ticker, shares=10)
-low_vol_port.buy('ABT', shares=1000000)
-print(low_vol_port.cash)
-print(low_vol_port.value)
-print(low_vol_port.get_portfolio())
+    low_vol_port.buy(ticker, shares=100)
+test_val = []
+test_val2 = []
+for i in range(1000):
+    low_vol_port.new_day()
+    test_val.append(low_vol_port.value)
+    test_val2.append(low_vol_port.cur_day)
+    print(low_vol_port.cur_day)
+    print(low_vol_port.value)
+
+x = numpy.array(test_val2)
+y = numpy.array(test_val)
+print(y)
+matplotlib.pyplot.plot(x,y)
+matplotlib.pyplot.show()
+

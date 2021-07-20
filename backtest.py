@@ -70,18 +70,22 @@ class portfolio:
         self.writer.writerow([ticker, trade_type[trade], date, shares])
 
     def update_value(self):
-        self.value = self.cash
+        new_value = self.cash
         for ticker, shares in self.portfolio.items():
             try:
                 share_price = self.prices_df.loc[ticker, self.cur_day.strftime("%Y-%m-%d")]['Close']
-                self.value = self.value + (share_price * shares)
+                new_value = new_value + (share_price * shares)
             except (ValueError, KeyError):
                 raise IndexError("Couldn't find the share price when calculating value of portfolio!")
+        self.value = new_value
         return self.value
 
-    def new_day(self):
-        self.cur_day + timedelta(days=1)
-        self.update_value()
+    def new_day(self, days=1):
+        self.cur_day += timedelta(days)
+        try:
+            self.update_value()
+        except:
+            pass
 
     def get_portfolio(self):
         portfolio_instance = self.portfolio
