@@ -2,13 +2,23 @@ from os import close
 import pandas
 from datetime import datetime, timedelta
 import csv
+import json
 
 class portfolio:
-    def __init__(self, cash, file_name, start_date: datetime, prices_df: pandas.DataFrame):
+
+    #weights_url should be a json file while trades_url should be a csv file
+    def __init__(self, cash, trades_url, weights_url, start_date: datetime, prices_df: pandas.DataFrame):
+        if(trades_url.split('.')[1] != 'csv'):
+            raise NameError('Trades url is not a csv file!')
+        if(weights_url.split('.')[1] != 'json'):
+            raise NameError('Weights url is not a json file!')
+
         self.value = cash
+        self.weights = {}
         self.cash = cash
         self.portfolio = {}
-        self.writer = csv.writer(open(file_name, 'w'), delimiter=',')
+        self.weights_file = weights_url
+        self.traders_writer = csv.writer(open(trades_url, 'w'), delimiter=',')
         self.cur_day = start_date
         self.prices_df = prices_df.set_index('Date', drop=True, append=True, inplace=False)
     
@@ -67,9 +77,25 @@ class portfolio:
 
     def upload_trade(self, trade, ticker, date, shares):
         trade_type = ['Buy', 'Sell']
-        self.writer.writerow([ticker, trade_type[trade], date, shares])
+        self.traders_writer.writerow([ticker, trade_type[trade], date, shares])
+    
+    def update_weights(self):
+        port_weight_dists = self.weights
+        cur_port_weight_dist = {}
+        cur_port_weight_dist['CASH'] = self.cash / self.value
+        for ticker, shares in self.portfolio.items():
+            try:
+                share_price = self.prices_df.loc[ticker, self.cur_day.strftime("%Y-%m-%d")]['Close']
+            except (ValueError, KeyError):
+                raise IndexError("Couldn't find the share price when calculating weights of portfolio!")
+            cur_port_weight_dist[ticker] = (share_price * shares) / self.value
+        
+        port_weight_dists[self.cur_day.strftime("%Y-%m-%d")] = cur_port_weight_dist
+        with open(self.weights_file, "w") as outfile:   
+            json.dump(port_weight_dists, outfile)
+        return cur_port_weight_dist
 
-    def update_value(self):
+    def update_value(self):     
         new_value = self.cash
         for ticker, shares in self.portfolio.items():
             try:
@@ -78,12 +104,13 @@ class portfolio:
             except (ValueError, KeyError):
                 raise IndexError("Couldn't find the share price when calculating value of portfolio!")
         self.value = new_value
-        return self.value
+        return new_value
 
     def new_day(self, days=1):
         self.cur_day += timedelta(days)
         try:
             self.update_value()
+            self.update_weights()
         except:
             pass
 

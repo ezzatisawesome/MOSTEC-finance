@@ -9,7 +9,10 @@ company_list_url = 'data/test1.csv'
 company_list = pandas.read_csv(company_list_url, sep=',', header=0)
 price_data = pandas.read_csv('data/us-shareprices-daily.csv', sep=';', header=0, index_col=[0])
 start_date = datetime.fromisoformat('2010-01-04')
-low_vol_port = portfolio(100000, 'portfolios/portfolio.csv', start_date, price_data)
+
+trades_csv = 'portfolios/portfolio.csv'
+weights_json = 'portfolios/portfolio.json'
+low_vol_port = portfolio(100000, trades_csv, weights_json, start_date, price_data)
 
 start = "2000-01-01"
 end = "2020-01-01"
@@ -61,7 +64,6 @@ for i in range(1000):
 
 x = numpy.array(test_val2)
 y = numpy.array(test_val)
-print(y)
 matplotlib.pyplot.plot(x,y)
 matplotlib.pyplot.show()
 
