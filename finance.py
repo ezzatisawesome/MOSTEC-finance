@@ -33,6 +33,7 @@ def monthly_data(price_df: pandas.DataFrame, start_date: datetime, end_date: dat
             returns_df = returns_df.append(price_df.loc[date-timedelta(days=1)])
     return returns_df
 
+#price_data1 should be an indice
 def beta_slope(price_data1:pandas.DataFrame, price_data2:pandas.DataFrame):
     price_data1 = price_data1.pct_change()
     price_data2 = price_data2.pct_change()  
@@ -43,6 +44,7 @@ def beta_slope(price_data1:pandas.DataFrame, price_data2:pandas.DataFrame):
     model = LinearRegression().fit(x, y)
     return model.coef_
 
+#price_data1 should be an indice
 def beta_cov(price_data1:pandas.DataFrame, price_data2:pandas.DataFrame):
     try:
         price_data1 = price_data1.pct_change()
