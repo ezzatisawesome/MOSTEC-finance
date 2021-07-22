@@ -7,7 +7,7 @@ import json
 class portfolio:
 
     #weights_url should be a json file while trades_url should be a csv file
-    def __init__(self, cash, trades_url, weights_url, start_date: datetime, prices_df: pandas.DataFrame):
+    def __init__(self, cash, trades_url, weights_url, prices_df: pandas.DataFrame, start_date: datetime):
         if(trades_url.split('.')[1] != 'csv'):
             raise NameError('Trades url is not a csv file!')
         if(weights_url.split('.')[1] != 'json'):
@@ -22,6 +22,9 @@ class portfolio:
         self.cur_day = start_date
         self.prices_df = prices_df.set_index('Date', drop=True, append=True, inplace=False)
     
+    def rebalance(self, company_list: dict):
+        pass
+
     # dollar amount takes precedence over shares
     def buy(self, ticker, shares=100, dollar_amount=None):
         if (ticker not in self.portfolio.keys()):

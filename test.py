@@ -1,42 +1,12 @@
+from strategies import strategies
 from datetime import datetime, timedelta
 import pandas
 
-prices = pandas.read_csv('data/us-shareprices-daily.csv', sep=';', header=0, index_col=[0])
+company_list_url = 'data/constituents.csv'
+price_data_url = 'data/us-shareprices-daily.csv'
+company_list = pandas.read_csv(company_list_url, sep=',', header=0)
+price_data = pandas.read_csv(price_data_url, sep=';', header=0, index_col=[0])
 
-def get_data(ticker, start, end):
-    mask = (prices['Date'] > start) & (prices['Date'] <= end)
-    price_df = prices.loc[mask].loc[ticker.upper()]
-    price_df.set_index(['Date'], inplace=True, drop=True)
-    return price_df
-
-
-def monthly_returns(price_df: pandas.DataFrame, start_date: datetime, end_date: datetime):
-    price_df.index = pandas.to_datetime(price_df.index)
-    price_df = price_df.pct_change()
-    price_df.drop(price_df.index[:1], inplace=True)
-    date_array = []
-    price_array = []
-    iter_date = start_date
-    while (iter_date.weekday() != 4):
-        iter_date = iter_date + timedelta(days=1)
-    date_array.append(iter_date)
-    while (iter_date + timedelta(days=7) < end_date):
-        iter_date = iter_date + timedelta(days=7)
-        date_array.append(iter_date)
-    for date in date_array:
-        try:
-            price_array.append(round(price_df.loc[date], 3))
-        except:
-            price_array.append(round(price_df.loc[date-timedelta(days=1)], 3))
-    return price_array
-
-
-start = "2007-01-01"
-end = "2020-01-01"
-#spy = get_data("SPY", start, end)
-aapl = get_data("aapl", start, end)
-
-start_date = datetime.fromisoformat('2007-01-01')
-end_date = datetime.fromisoformat('2010-01-01')
-
-print(monthly_returns(aapl, start_date, end_date))
+test_strat = strategies(company_list, price_data, datetime.fromisoformat('2010-01-01'), datetime.fromisoformat('2020-01-01'))
+test_strat.set_monthly()
+print(test_strat.low_vol_1(datetime.fromisoformat('2010-01-01')))

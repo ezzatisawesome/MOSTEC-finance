@@ -1,26 +1,33 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from backtest import portfolio
-import strategies
+from strategies import strategies
 import pandas
 import matplotlib.pyplot
 import numpy
 
 
-def main(strategy, portfolio: portfolio):
-    test_hello = {'ABT': 0.4449378671376737, 'ACN': 0.7322539352754748, 'ATVI': 0.7794778666942336, 'ADM': 0.7932822233625583, 'MMM': 0.8040232419762925, 'ADBE': 1.0681818947675954, 'AOS': 1.1070175677209382, 'ABMD': 1.1816852081738856}
-    for ticker in test_hello:
-        portfolio.buy(ticker, shares=100)
-    test_val = []
-    test_val2 = []
-    for i in range(1000):
-        portfolio.new_day()
-        test_val.append(portfolio.value)
-        test_val2.append(portfolio.cur_day)
-        print(portfolio.cur_day)
-        print(portfolio.value)
+def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_date:datetime):
+    value_array = []
+    day_array = []
 
-    x = numpy.array(test_val2)
-    y = numpy.array(test_val)
+    strategy.set_monthly()
+    iter_date = start_date
+    
+    while iter_date <= end_date:
+        if (strategy.low_vol_1(iter_date) == None):
+            continue
+
+        portfolio.rebalance(strategy.low_vol_1(iter_date))
+        value_array.append(portfolio.value)
+        day_array.append(portfolio.cur_day)
+
+        iter_date += timedelta(days=1)
+        portfolio.new_day()
+
+        print("{}: {}".format(iter_date, portfolio.value))
+
+    x = numpy.array(value_array)
+    y = numpy.array(day_array)
     matplotlib.pyplot.plot(x,y)
     matplotlib.pyplot.show()
 
@@ -36,7 +43,8 @@ if (__name__ == "__main__"):
     trades_csv = 'portfolios/portfolio.csv'
     weights_json = 'portfolios/portfolio.json'
     starting_amount = 100000
-    start_date = datetime.fromisoformat('2010-01-04')
-    low_vol_port = portfolio(starting_amount, trades_csv, weights_json, start_date, price_data)
-    low_vol_strat = strategies.low_vol_1(company_list, price_data)
-    main(low_vol_strat, low_vol_port)
+    start_date = datetime.fromisoformat('2010-01-01')
+    end_date = datetime.fromisoformat('2020-01-01')
+    low_vol_port = portfolio(starting_amount, trades_csv, weights_json, price_data, start_date)
+    low_vol_strat = strategies(company_list, price_data, start_date, end_date)
+    main(low_vol_strat, low_vol_port, start_date, end_date)

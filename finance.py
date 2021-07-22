@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
+from sklearn.linear_model import LinearRegression
 import pandas
 import numpy
-from sklearn.linear_model import LinearRegression
 
 def get_data(ticker, prices_df: pandas.DataFrame, start, end):
     mask = (prices_df['Date'] > start) & (prices_df['Date'] <= end)
@@ -55,4 +55,5 @@ def beta_cov(price_data1:pandas.DataFrame, price_data2:pandas.DataFrame):
         return covariance/variance
     except ValueError:
         return "ValueError"
+
 
