@@ -15,21 +15,20 @@ def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_da
 
     while iter_date <= end_date:
         if (strategy.check_date(iter_date)):
+            print(portfolio.value)
             iter_date = iter_date + timedelta(days=1)
             portfolio.new_day()
             continue
-        print("check")
-        print(iter_date)
-        #print(strategy.low_vol_1(iter_date))
-
-        #portfolio.rebalance(strategy.low_vol_1(iter_date))
+        weights = strategy.low_vol_1(iter_date)
+        portfolio.rebalance2(weights)
         #value_array.append(portfolio.value)
         #day_array.append(portfolio.cur_day)
+        print("{}: {}".format(iter_date, portfolio.value))
+        print(weights)
+        print(portfolio.portfolio)
 
         iter_date = iter_date + timedelta(days=1)
         portfolio.new_day()
-
-        #print("{}: {}".format(iter_date, portfolio.value))
 
     #x = numpy.array(value_array)
     #y = numpy.array(day_array)

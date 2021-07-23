@@ -4,6 +4,14 @@ from datetime import datetime, timedelta
 import csv
 import json
 
+
+class queried_order:
+    def __init__(self, ticker, attempted_purchase_date, shares=100, dollar_amount=None):
+        self.ticker = ticker
+        self.shares = shares
+        self.dollar_amount = dollar_amount
+        self.apd = attempted_purchase_date
+
 class portfolio:
     
     #weights_url should be a json file while trades_url should be a csv file
@@ -23,7 +31,39 @@ class portfolio:
         self.prices_df = prices_df.set_index('Date', drop=True, append=True, inplace=False)
     
     def rebalance(self, company_list: dict):
-        pass
+        self.update_value()
+        for ticker in company_list.keys():
+            if ticker not in self.portfolio.keys():
+                self.portfolio[ticker] = 0
+            try:
+                share_price = self.prices_df.loc[ticker, self.cur_day.strftime("%Y-%m-%d")]['Close']
+                company_dollar_weight = self.value * company_list[ticker]
+                delta_dollar = company_dollar_weight - self.portfolio[ticker] * share_price
+                if (delta_dollar < 0):
+                    self.sell(ticker, dollar_amount=abs(delta_dollar))
+                else:
+                    self.buy(ticker, dollar_amount=delta_dollar)
+            except (KeyError, ValueError):
+                KeyError("{}: REBALANCE DATA ERROR".format(ticker))
+
+    def rebalance2(self, company_list: dict):
+        for ticker in self.portfolio.keys():
+            if (ticker not in self.portfolio.keys()):
+                # sell all of it
+                self.sell(ticker, shares=self.portfolio[ticker])
+        for ticker in company_list.keys():
+            if (ticker not in self.portfolio.keys()):
+                self.portfolio[ticker] = 0
+            value_relative_to_port = company_list[ticker] * self.value
+            
+            share_price = self.prices_df.loc[ticker, self.cur_day.strftime("%Y-%m-%d")]['Close']
+            market_value = share_price * self.portfolio[ticker]
+
+            if (value_relative_to_port > market_value):
+                self.buy(ticker, dollar_amount=value_relative_to_port-market_value)
+            elif (value_relative_to_port < market_value):
+                self.sell(ticker, dollar_amount=market_value-value_relative_to_port)
+
 
     # dollar amount takes precedence over shares
     def buy(self, ticker, shares=100, dollar_amount=None):
@@ -76,6 +116,9 @@ class portfolio:
             self.upload_trade(1, ticker, self.cur_day, shares)
             self.cash += shares * cur_price
 
+        if self.portfolio[ticker] == 0:
+            self.portfolio.pop(ticker)
+
         self.update_value()
 
     def upload_trade(self, trade, ticker, date, shares):
@@ -97,6 +140,11 @@ class portfolio:
         with open(self.weights_file, "w") as outfile:   
             json.dump(port_weight_dists, outfile)
         return cur_port_weight_dist
+
+    def clean_portfolio(self):
+        for ticker, weight in self.portfolio:
+            if (weight == 0):
+                self.portfolio.pop(ticker)
 
     def update_value(self):     
         new_value = self.cash

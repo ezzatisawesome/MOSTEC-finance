@@ -1,7 +1,9 @@
+from os import error
+from numpy.core.fromnumeric import sort
 import pandas
 from datetime import datetime, timedelta
 from dateutil import relativedelta
-from finance import get_data, monthly_data, beta_cov
+from finance import get_data, monthly_data2, beta_cov
 
 class strategies:
     def __init__(self, company_list:pandas.DataFrame, price_data:pandas.DataFrame, start_date:datetime, end_date:datetime):
@@ -10,6 +12,10 @@ class strategies:
         self.start_date = start_date
         self.end_date = end_date
         self.date_array = []
+
+        self.start_data_date = datetime.fromisoformat("1989-12-31")
+        self.end_data_date = datetime.fromisoformat("2019-12-31")
+        self.spy_data = get_data("SPY", self.price_data, self.start_data_date, self.end_data_date)
 
     def set_monthly(self):
         date_array = []
@@ -29,34 +35,32 @@ class strategies:
         return cur_date not in self.date_array
 
     def low_vol_1(self, cur_date: datetime):
-        start = "1990-01-01"
-        end = "2020-01-01"
         end_date_beta = cur_date - relativedelta.relativedelta(years=3)
         try:
-            spy_data = get_data("SPY", self.price_data, start, end)
-            spy_monthly_data = monthly_data(spy_data, end_date_beta, cur_date)
+            spy_monthly_data = monthly_data2(self.spy_data, end_date_beta, cur_date)
         except:
-            ValueError("STOPPP")
+            ValueError("SPY: MONTHLY DATA ERROR")
         beta_data = {}
         for company in self.company_list.iterrows():
             ticker = company[1][0]
+            company_data = get_data(ticker, self.price_data, self.start_data_date, self.end_data_date)
             try:
-                company_data = get_data(ticker, self.price_data, start, end)
+                company_monthly_data = monthly_data2(company_data, end_date_beta, cur_date)
             except:
-                print("{} not found.".format(ticker))
+                print("{}: MONTHLY DATA ERROR".format(ticker))
+                continue
             try:
-                company_monthly_data = monthly_data(company_data, end_date_beta, cur_date)
                 beta = beta_cov(spy_monthly_data, company_monthly_data)
                 beta_data[ticker] = beta
                 print("{}: {}".format(ticker, beta))
-            except (ValueError, KeyError):
-                print("{} values not found.".format(ticker))
-        sorted_beta_values = sorted(beta_data.values()) # Sort the values
-        sorted_beta_data = {}
-        for i in sorted_beta_values[:round(len(sorted_beta_values)*.2)]:
-            for k in beta_data.keys():
-                if beta_data[k] == i:
-                    sorted_beta_data[k] = beta_data[k]
-                    break
-
-        return sorted_beta_data
+            except:
+                print("{}: BETA ERROR".format(ticker))
+        sorted_beta_data = sorted(beta_data.items(), key=lambda x: x[1])[:round(len(beta_data)*.2)]
+        if (len(sorted_beta_data) != 0):
+            equal_weight = 1 / len(sorted_beta_data)
+        else:
+            equal_weight = 0
+        weights = {}
+        for i in sorted_beta_data:
+            weights[i[0]] = equal_weight
+        return weights
