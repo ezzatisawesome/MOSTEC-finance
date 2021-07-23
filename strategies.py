@@ -3,18 +3,6 @@ from datetime import datetime, timedelta
 from dateutil import relativedelta
 from finance import get_data, monthly_data, beta_cov
 
-def split_time(start_date:datetime, end_date:datetime, days:int=0, months:int=0, years:int=0):
-        date_array = []
-        delta_time = relativedelta.relativedelta(days=days, months=months, years=years)
-        iter_date = start_date
-        while (iter_date.weekday() != 4):
-            iter_date = iter_date + timedelta(days=1)
-        date_array.append(iter_date)
-        while (iter_date + timedelta(days=7) < end_date):
-            iter_date = iter_date + delta_time
-            date_array.append(iter_date)
-        return date_array
-
 class strategies:
     def __init__(self, company_list:pandas.DataFrame, price_data:pandas.DataFrame, start_date:datetime, end_date:datetime):
         self.company_list = company_list
@@ -24,16 +12,23 @@ class strategies:
         self.date_array = []
 
     def set_monthly(self):
-        self.date_array = split_time(self.start_date, self.end_date, months=1)
+        date_array = []
+        delta_time = relativedelta.relativedelta(months=1)
+        next_month = self.start_date.replace(day=28) + timedelta(days=4)
+        iter_date = next_month - timedelta(days=next_month.day)
+        date_array.append(iter_date)
+        while (iter_date + delta_time < self.end_date):
+            iter_date = iter_date + delta_time
+            next_month = iter_date.replace(day=28) + timedelta(days=4)
+            iter_date = next_month - timedelta(days=next_month.day)
+            date_array.append(iter_date)
+        self.date_array = date_array
 
-    def set_yearly(self):
-        self.date_array = split_time(self.start_date, self.end_date, years=1)
+    # check if current day is end of month
+    def check_date(self, cur_date):
+        return cur_date not in self.date_array
 
     def low_vol_1(self, cur_date: datetime):
-        # check if current day is end of month
-        if cur_date not in self.date_array:
-            return None
-
         start = "1990-01-01"
         end = "2020-01-01"
         end_date_beta = cur_date - relativedelta.relativedelta(years=3)

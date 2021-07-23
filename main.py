@@ -12,24 +12,29 @@ def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_da
 
     strategy.set_monthly()
     iter_date = start_date
-    
+
     while iter_date <= end_date:
-        if (strategy.low_vol_1(iter_date) == None):
+        if (strategy.check_date(iter_date)):
+            iter_date = iter_date + timedelta(days=1)
+            portfolio.new_day()
             continue
+        print("check")
+        print(iter_date)
+        #print(strategy.low_vol_1(iter_date))
 
-        portfolio.rebalance(strategy.low_vol_1(iter_date))
-        value_array.append(portfolio.value)
-        day_array.append(portfolio.cur_day)
+        #portfolio.rebalance(strategy.low_vol_1(iter_date))
+        #value_array.append(portfolio.value)
+        #day_array.append(portfolio.cur_day)
 
-        iter_date += timedelta(days=1)
+        iter_date = iter_date + timedelta(days=1)
         portfolio.new_day()
 
-        print("{}: {}".format(iter_date, portfolio.value))
+        #print("{}: {}".format(iter_date, portfolio.value))
 
-    x = numpy.array(value_array)
-    y = numpy.array(day_array)
-    matplotlib.pyplot.plot(x,y)
-    matplotlib.pyplot.show()
+    #x = numpy.array(value_array)
+    #y = numpy.array(day_array)
+    #matplotlib.pyplot.plot(x,y)
+    #matplotlib.pyplot.show()
 
 if (__name__ == "__main__"):
     company_list_url = 'data/test1.csv'
@@ -43,8 +48,8 @@ if (__name__ == "__main__"):
     trades_csv = 'portfolios/portfolio.csv'
     weights_json = 'portfolios/portfolio.json'
     starting_amount = 100000
-    start_date = datetime.fromisoformat('2010-01-01')
-    end_date = datetime.fromisoformat('2020-01-01')
+    start_date = datetime.fromisoformat('2009-12-31')
+    end_date = datetime.fromisoformat('2019-12-31')
     low_vol_port = portfolio(starting_amount, trades_csv, weights_json, price_data, start_date)
     low_vol_strat = strategies(company_list, price_data, start_date, end_date)
     main(low_vol_strat, low_vol_port, start_date, end_date)

@@ -1,12 +1,13 @@
-from strategies import strategies
+from dateutil.relativedelta import relativedelta
+from finance import monthly_data2, get_data
 from datetime import datetime, timedelta
 import pandas
 
-company_list_url = 'data/constituents.csv'
 price_data_url = 'data/us-shareprices-daily.csv'
-company_list = pandas.read_csv(company_list_url, sep=',', header=0)
 price_data = pandas.read_csv(price_data_url, sep=';', header=0, index_col=[0])
+spy_df = get_data('spy', price_data, "2000-01-01", "2020-01-02")
+goog_df_monthly = monthly_data2(goog_df, datetime.fromisoformat("2014-12-31"), datetime.fromisoformat("2019-12-31"))
+goog_df = get_data('goog', price_data, "2000-01-01", "2020-01-01")
+goog_df_monthly = monthly_data2(goog_df, datetime.fromisoformat("2014-12-31"), datetime.fromisoformat("2019-12-31"))
 
-test_strat = strategies(company_list, price_data, datetime.fromisoformat('2010-01-01'), datetime.fromisoformat('2020-01-01'))
-test_strat.set_monthly()
-print(test_strat.low_vol_1(datetime.fromisoformat('2010-01-01')))
+print(goog_df_monthly)

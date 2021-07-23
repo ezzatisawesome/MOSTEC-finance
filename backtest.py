@@ -5,7 +5,7 @@ import csv
 import json
 
 class portfolio:
-
+    
     #weights_url should be a json file while trades_url should be a csv file
     def __init__(self, cash, trades_url, weights_url, prices_df: pandas.DataFrame, start_date: datetime):
         if(trades_url.split('.')[1] != 'csv'):

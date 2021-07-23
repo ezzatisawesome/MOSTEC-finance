@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+from operator import truediv
+from dateutil import relativedelta
 from sklearn.linear_model import LinearRegression
 import pandas
 import numpy
@@ -17,14 +19,44 @@ def monthly_data(price_df: pandas.DataFrame, start_date: datetime, end_date: dat
     while (iter_date.weekday() != 4):
         iter_date = iter_date + timedelta(days=1)
     date_array.append(iter_date)
-    while (iter_date + timedelta(days=7) < end_date):
-        iter_date = iter_date + timedelta(days=7)
+    while (iter_date + relativedelta.relativedelta(months=1) < end_date):
+        iter_date = iter_date + relativedelta.relativedelta(months=1)
         date_array.append(iter_date)
     for date in date_array:
         try:
             returns_df = returns_df.append(price_df.loc[date])
         except:
             returns_df = returns_df.append(price_df.loc[date-timedelta(days=1)])
+    return returns_df
+
+def monthly_data2(price_df:pandas.DataFrame, start_date: datetime, end_date:datetime):
+    price_df.set_index('Close', drop=True, append=False)
+    #print(price_df)
+    returns_df = pandas.DataFrame()
+    delta_time = relativedelta.relativedelta(months=1)
+    next_month = start_date.replace(day=28) + timedelta(days=4)
+    iter_date = next_month - timedelta(days=next_month.day)
+    while (iter_date + delta_time < end_date):
+        iter_date = iter_date + delta_time
+        next_month = iter_date.replace(day=28) + timedelta(days=4)
+        iter_date = next_month - timedelta(days=next_month.day)
+        
+        if (iter_date.weekday() == 5):
+            try:
+                returns_df = returns_df.append(price_df.loc[(iter_date-timedelta(days=1)).strftime("%Y-%m-%d")])
+            except:
+                returns_df = returns_df.append(price_df.loc[(iter_date-timedelta(days=2)).strftime("%Y-%m-%d")])
+        elif (iter_date.weekday() == 6):
+            try:
+                returns_df = returns_df.append(price_df.loc[(iter_date+timedelta(days=1)).strftime("%Y-%m-%d")])
+            except:
+                returns_df = returns_df.append(price_df.loc[(iter_date+timedelta(days=2)).strftime("%Y-%m-%d")])
+        else:
+            try:
+                returns_df = returns_df.append(price_df.loc[iter_date.strftime("%Y-%m-%d")])
+            except:
+                pass
+    
     return returns_df
 
 #price_data1 should be an indice
