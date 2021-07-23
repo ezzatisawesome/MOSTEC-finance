@@ -11,24 +11,27 @@ def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_da
     day_array = []
 
     strategy.set_monthly()
-    iter_date = start_date
+    iter_date = portfolio.cur_day
 
     while iter_date <= end_date:
         if (strategy.check_date(iter_date)):
-            print(portfolio.value)
-            iter_date = iter_date + timedelta(days=1)
+            portfolio.buy_queried() # any queried orders or rebalances should be executed
+            
+            print("{}: {}".format(iter_date, portfolio.value))
             portfolio.new_day()
+            iter_date = portfolio.cur_day
             continue
+
         weights = strategy.low_vol_1(iter_date)
-        portfolio.rebalance2(weights)
+        portfolio.rebalance(weights)
         #value_array.append(portfolio.value)
         #day_array.append(portfolio.cur_day)
+        print("STRAT:", weights)
+        print("PORT: ", portfolio.portfolio)
         print("{}: {}".format(iter_date, portfolio.value))
-        print(weights)
-        print(portfolio.portfolio)
 
-        iter_date = iter_date + timedelta(days=1)
         portfolio.new_day()
+        iter_date = portfolio.cur_day
 
     #x = numpy.array(value_array)
     #y = numpy.array(day_array)
