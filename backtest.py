@@ -39,7 +39,7 @@ class portfolio:
         self.portfolio = {}
         self.weights_file = weights_url
         self.traders_writer = csv.writer(open(trades_url, 'w'), delimiter=',')
-        self.cur_day = start_date
+        self.cur_day = start_date - timedelta(days=1)
         self.prices_df = prices_df.set_index('Date', drop=True, append=True, inplace=False)
 
         self.query = []
@@ -67,36 +67,28 @@ class portfolio:
         for ticker in company_list.keys():
             if (ticker not in self.portfolio.keys()):
                 self.portfolio[ticker] = 0
-            value_relative_to_port = company_list[ticker] * self.value
+            value_relative_to_port = company_list[ticker] * self.value, 6
             share_price = self.prices_df.loc[ticker, self.cur_day.strftime("%Y-%m-%d")]['Close']
-            market_value = share_price * self.portfolio[ticker]
-            if (value_relative_to_port > market_value):
-                buy_list[ticker] = value_relative_to_port-market_value
-            elif (value_relative_to_port < market_value):
-                sell_list[ticker] = market_value-value_relative_to_port
-
-            for i in sell_list.keys():
-                self.sell(i, dollar_amount=sell_list[i])
-            for i in buy_list.keys():
-                self.buy(i, dollar_amount=buy_list[i])
+            market_value = share_price * self.portfolio[ticker], 6
+            if (round(value_relative_to_port) > round(market_value)):
+                buy_list[ticker] = round(value_relative_to_port-market_value) - 1
+            elif (round(value_relative_to_port) < round(market_value)):
+                sell_list[ticker] = round(market_value-value_relative_to_port) - 1
+            else:
+                pass
+        self.clean_portfolio()
+        
+        for i in sell_list.keys():
+            self.sell(i, dollar_amount=sell_list[i])
+        for i in buy_list.keys():
+            self.buy(i, dollar_amount=buy_list[i])
     
     def rebalance2(self, company_list: dict):
         for ticker in self.portfolio.keys():
-            if (ticker not in self.portfolio.keys()):
+            if (ticker not in company_list.keys()):
                 # sell all of it
                 self.sell(ticker, shares=self.portfolio[ticker])
-        """
-        for ticker in company_list.keys():
-            if (ticker not in self.portfolio.keys()):
-                self.portfolio[ticker] = 0
-            value_relative_to_port = company_list[ticker] * self.value
-            share_price = self.prices_df.loc[ticker, self.cur_day.strftime("%Y-%m-%d")]['Close']
-            market_value = share_price * self.portfolio[ticker]
-            if (value_relative_to_port > market_value):
-                self.buy(ticker, dollar_amount=value_relative_to_port-market_value)
-            elif (value_relative_to_port < market_value):
-                self.sell(ticker, dollar_amount=market_value-value_relative_to_port)
-        """
+
         buy_list = {}
         sell_list = {}
 
@@ -106,15 +98,19 @@ class portfolio:
             value_relative_to_port = company_list[ticker] * self.value
             share_price = self.prices_df.loc[ticker, self.cur_day.strftime("%Y-%m-%d")]['Close']
             market_value = share_price * self.portfolio[ticker]
-            if (value_relative_to_port > market_value):
-                buy_list[ticker] = value_relative_to_port-market_value
-            elif (value_relative_to_port < market_value):
-                sell_list[ticker] = market_value-value_relative_to_port
+            if (round(value_relative_to_port) > round(market_value)):
+                buy_list[ticker] = round(value_relative_to_port - market_value) - 1
+            elif (round(value_relative_to_port) < round(market_value)):
+                sell_list[ticker] = round(market_value - value_relative_to_port) - 1
+            else:
+                pass
+        
+        self.clean_portfolio()
 
-            for i in sell_list.keys():
-                self.sell(i, dollar_amount=sell_list[i])
-            for i in buy_list.keys():
-                self.buy(i, dollar_amount=buy_list[i])
+        for i in sell_list.keys():
+            self.sell(i, dollar_amount=sell_list[i])
+        for i in buy_list.keys():
+            self.buy(i, dollar_amount=buy_list[i])
 
     def buy_queried(self):
         for item in self.query:
@@ -123,7 +119,7 @@ class portfolio:
                     self.rebalance2(item.company_list)
                     self.query.remove(item)
                     print("{}: REBALANCE QUERY COMPLETE".format(self.cur_day))
-                except KeyError:
+                except (KeyError, IndexError):
                     print("{}: REBALANCE STILL IN QUEUE".format(self.cur_day))
             elif isinstance(item, queried_buy):
                 try:
@@ -187,9 +183,6 @@ class portfolio:
             self.upload_trade(1, ticker, self.cur_day, shares)
             self.cash += shares * cur_price
 
-        if self.portfolio[ticker] == 0:
-            self.portfolio.pop(ticker)
-
         self.update_value()
 
     def upload_trade(self, trade, ticker, date, shares):
@@ -197,9 +190,7 @@ class portfolio:
         self.traders_writer.writerow([ticker, trade_type[trade], date, shares])
     
     def clean_portfolio(self):
-        for ticker, weight in self.portfolio:
-            if (weight == 0):
-                self.portfolio.pop(ticker)
+        {x:y for x,y in self.portfolio.items() if y!=0}
     
     def update_weights(self):
         port_weight_dists = self.weights
@@ -235,12 +226,4 @@ class portfolio:
             self.update_weights()
         except:
             pass
-
-    def get_portfolio(self):
-        portfolio_instance = self.portfolio
-        for position in portfolio_instance:
-            if (portfolio_instance[position] == 0):
-                portfolio_instance.pop(position)
-        return portfolio_instance
-
 

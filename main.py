@@ -11,27 +11,25 @@ def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_da
     day_array = []
 
     strategy.set_monthly()
-    iter_date = portfolio.cur_day
 
-    while iter_date <= end_date:
-        if (strategy.check_date(iter_date)):
+    while portfolio.cur_day <= end_date:
+
+        portfolio.new_day()
+        
+        if (strategy.check_date(portfolio.cur_day)):
+
             portfolio.buy_queried() # any queried orders or rebalances should be executed
-            
-            print("{}: {}".format(iter_date, portfolio.value))
-            portfolio.new_day()
-            iter_date = portfolio.cur_day
+            print("{}: {}".format(portfolio.cur_day, portfolio.value))
             continue
 
-        weights = strategy.low_vol_1(iter_date)
+        weights = strategy.low_vol_1(portfolio.cur_day)
+        print("CASH: ", portfolio.cash)
         portfolio.rebalance(weights)
         #value_array.append(portfolio.value)
         #day_array.append(portfolio.cur_day)
         print("STRAT:", weights)
         print("PORT: ", portfolio.portfolio)
-        print("{}: {}".format(iter_date, portfolio.value))
-
-        portfolio.new_day()
-        iter_date = portfolio.cur_day
+        print("{}: {}".format(portfolio.cur_day, portfolio.value))
 
     #x = numpy.array(value_array)
     #y = numpy.array(day_array)
@@ -50,7 +48,7 @@ if (__name__ == "__main__"):
     trades_csv = 'portfolios/portfolio.csv'
     weights_json = 'portfolios/portfolio.json'
     starting_amount = 100000
-    start_date = datetime.fromisoformat('2009-12-31')
+    start_date = datetime.fromisoformat('2011-10-15')
     end_date = datetime.fromisoformat('2019-12-31')
     low_vol_port = portfolio(starting_amount, trades_csv, weights_json, price_data, start_date)
     low_vol_strat = strategies(company_list, price_data, start_date, end_date)

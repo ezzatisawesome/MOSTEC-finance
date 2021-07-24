@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from operator import truediv
 from dateutil import relativedelta
+from pandas.core.base import DataError
 from sklearn.linear_model import LinearRegression
 import pandas
 import numpy
@@ -29,7 +30,7 @@ def monthly_data(price_df: pandas.DataFrame, start_date: datetime, end_date: dat
             returns_df = returns_df.append(price_df.loc[date-timedelta(days=1)])
     return returns_df
 
-def monthly_data2(price_df:pandas.DataFrame, start_date: datetime, end_date:datetime):
+def monthly_data2(price_df:pandas.DataFrame, start_date:datetime, end_date:datetime):
     price_df.index = pandas.to_datetime(price_df.index)
     returns_df = pandas.DataFrame()
     delta_time = relativedelta.relativedelta(months=1)
@@ -48,8 +49,19 @@ def monthly_data2(price_df:pandas.DataFrame, start_date: datetime, end_date:date
                 returns_df = returns_df.append(price_df.loc[(iter_date+timedelta(days=1))])
             except:
                 returns_df = returns_df.append(price_df.loc[(iter_date+timedelta(days=2))])
+        elif (iter_date.weekday() == 4):
+            try:
+                returns_df = returns_df.append(price_df.loc[(iter_date-timedelta(days=1))])
+            except:
+                returns_df = returns_df.append(price_df.loc[(iter_date-timedelta(days=2))])
+        elif (iter_date.weekday() == 0):
+            try:
+                returns_df = returns_df.append(price_df.loc[(iter_date+timedelta(days=1))])
+            except:
+                returns_df = returns_df.append(price_df.loc[(iter_date+timedelta(days=2))])
         else:
             returns_df = returns_df.append(price_df.loc[iter_date])
+        
         iter_date = iter_date + delta_time
 
     return returns_df
