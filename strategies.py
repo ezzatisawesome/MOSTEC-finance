@@ -1,9 +1,10 @@
 from os import error
 from numpy.core.fromnumeric import sort
-import pandas
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from finance import get_data, monthly_data2, beta_cov
+import pandas
+
 
 class strategies:
     def __init__(self, company_list:pandas.DataFrame, price_data:pandas.DataFrame, start_date:datetime, end_date:datetime):
@@ -59,7 +60,8 @@ class strategies:
                 print("{}: {}".format(ticker, beta))
             except:
                 print("{}: BETA ERROR".format(ticker))
-        sorted_beta_data = sorted(beta_data.items(), key=lambda x: x[1])[:round(len(beta_data)*.2)]
+        result = dict(filter(lambda x: x[1] >= 0.0, beta_data.items()))
+        sorted_beta_data = sorted(result.items(), key=lambda x: x[1])[:round(len(result)*.2)]
         if (len(sorted_beta_data) != 0):
             equal_weight = 1 / len(sorted_beta_data)
         else:

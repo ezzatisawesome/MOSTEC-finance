@@ -1,12 +1,15 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from backtest import portfolio
 from strategies import strategies
-import pandas
+from tempfile import TemporaryFile
 import matplotlib.pyplot
+import pandas
 import numpy
 
 
 def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_date:datetime):
+    value_array_file = 'portfolios/value_array.npy'
+    day_array_file = 'portfolios/day_array.npy'
     value_array = []
     day_array = []
     strategy.set_monthly()
@@ -29,6 +32,8 @@ def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_da
 
     x = numpy.array(value_array)
     y = numpy.array(day_array)
+    numpy.save(value_array_file, x)
+    numpy.save(day_array_file, y)
     matplotlib.pyplot.plot(y,x)
     matplotlib.pyplot.show()
 
@@ -44,8 +49,8 @@ if (__name__ == "__main__"):
     trades_csv = 'portfolios/portfolio.csv'
     weights_json = 'portfolios/portfolio.json'
     starting_amount = 100000
-    start_date = datetime.fromisoformat('2009-12-31')
-    end_date = datetime.fromisoformat('2019-12-31')
+    start_date = datetime.fromisoformat('2011-09-25')
+    end_date = datetime.fromisoformat('2014-12-31')
     low_vol_port = portfolio(starting_amount, trades_csv, weights_json, price_data, start_date)
     low_vol_strat = strategies(company_list, price_data, start_date, end_date)
     main(low_vol_strat, low_vol_port, start_date, end_date)

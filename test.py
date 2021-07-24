@@ -12,6 +12,7 @@ start_date = end_date - relativedelta.relativedelta(years=3)
 #spy_df = get_data('spy', price_data, datetime.fromisoformat("2000-01-01"), datetime.fromisoformat("2020-01-02"))
 #goog_df = get_data('abt', price_data, datetime.fromisoformat("2000-01-01"), datetime.fromisoformat("2020-01-02"))
 
+"""
 spy_df = get_data('spy', price_data, start_date-relativedelta.relativedelta(months=1), end_date+relativedelta.relativedelta(months=1))
 mmm_df = get_data('MMM', price_data, start_date-relativedelta.relativedelta(months=1), end_date+relativedelta.relativedelta(months=1))
 
@@ -23,4 +24,14 @@ goog_df_monthly = monthly_data2(mmm_df, start_date, end_date)
 beta_cov(spy_df_monthly, goog_df_monthly)
 
 print(beta_cov(spy_df_monthly, goog_df_monthly))
+"""
 
+ticker = 'ABM'
+
+test_dict = {'ABM': 0.0, 'ABT': 0.5, 'ABC': 0.5}
+
+for i in test_dict.keys():
+    if test_dict[i] == 0:
+        test_dict.pop(i)
+
+print(test_dict)

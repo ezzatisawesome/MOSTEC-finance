@@ -46,8 +46,6 @@ class portfolio:
 
     def rebalance(self, company_list: dict):
 
-        self.clean_portfolio()
-
         if (len(company_list) == 0):
             print("{}: REBALANCE LIST EMPTY".format(self.cur_day))
             return
@@ -59,13 +57,14 @@ class portfolio:
             print("{}: QUERYING REBALANCE".format(self.cur_day))
             return
     
-        for ticker in self.portfolio.keys():
-            if (ticker not in self.portfolio.keys()):
-                # sell all of it
-                self.sell(ticker, shares=self.portfolio[ticker])
-        
         buy_list = {}
         sell_list = {}
+        sell_all_list = {}
+    
+        for ticker in self.portfolio.keys():
+            if (ticker not in company_list.keys()):
+                # sell all of it
+                sell_all_list[ticker] = self.portfolio[ticker]
 
         for ticker in company_list.keys():
             if (ticker not in self.portfolio.keys()):
@@ -79,23 +78,23 @@ class portfolio:
                 sell_list[ticker] = round(market_value-value_relative_to_port)
             else:
                 pass
-        
+        for i in sell_all_list.keys():
+            self.sell(i, shares=sell_all_list[i])
         for i in sell_list.keys():
             self.sell(i, dollar_amount=sell_list[i])
         for i in buy_list.keys():
             self.buy(i, dollar_amount=buy_list[i])
     
-    def rebalance2(self, company_list: dict):  
+    def rebalance2(self, company_list: dict):
 
-        self.clean_portfolio()
+        buy_list = {}
+        sell_list = {}
+        sell_all_list = {}
     
         for ticker in self.portfolio.keys():
             if (ticker not in company_list.keys()):
                 # sell all of it
-                self.sell(ticker, shares=self.portfolio[ticker])
-
-        buy_list = {}
-        sell_list = {}
+                sell_all_list[ticker] = self.portfolio[ticker]
 
         for ticker in company_list.keys():
             if (ticker not in self.portfolio.keys()):
@@ -109,7 +108,8 @@ class portfolio:
                 sell_list[ticker] = round(market_value - value_relative_to_port)
             else:
                 pass
-                
+        for i in sell_all_list.keys():
+            self.sell(i, shares=sell_all_list[i])     
         for i in sell_list.keys():
             self.sell(i, dollar_amount=sell_list[i])
         for i in buy_list.keys():
@@ -188,14 +188,15 @@ class portfolio:
             self.upload_trade(1, ticker, self.cur_day, shares)
             self.cash += shares * cur_price
 
+        if (self.portfolio[ticker] == 0):
+            self.portfolio.pop(ticker)
+                    
         self.update_value()
+
 
     def upload_trade(self, trade, ticker, date, shares):
         trade_type = ['Buy', 'Sell']
         self.traders_writer.writerow([ticker, trade_type[trade], date, shares])
-    
-    def clean_portfolio(self):
-        {x:y for x,y in self.portfolio.items() if y!=0}
     
     def update_weights(self):
         port_weight_dists = self.weights
