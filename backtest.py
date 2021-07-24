@@ -45,6 +45,9 @@ class portfolio:
         self.query = []
 
     def rebalance(self, company_list: dict):
+
+        self.clean_portfolio()
+
         if (len(company_list) == 0):
             print("{}: REBALANCE LIST EMPTY".format(self.cur_day))
             return
@@ -55,7 +58,7 @@ class portfolio:
             self.query.append(new_query)
             print("{}: QUERYING REBALANCE".format(self.cur_day))
             return
-        
+    
         for ticker in self.portfolio.keys():
             if (ticker not in self.portfolio.keys()):
                 # sell all of it
@@ -73,17 +76,19 @@ class portfolio:
             if (round(value_relative_to_port) > round(market_value)):
                 buy_list[ticker] = round(value_relative_to_port-market_value) - 1
             elif (round(value_relative_to_port) < round(market_value)):
-                sell_list[ticker] = round(market_value-value_relative_to_port) - 1
+                sell_list[ticker] = round(market_value-value_relative_to_port)
             else:
                 pass
-        self.clean_portfolio()
         
         for i in sell_list.keys():
             self.sell(i, dollar_amount=sell_list[i])
         for i in buy_list.keys():
             self.buy(i, dollar_amount=buy_list[i])
     
-    def rebalance2(self, company_list: dict):
+    def rebalance2(self, company_list: dict):  
+
+        self.clean_portfolio()
+    
         for ticker in self.portfolio.keys():
             if (ticker not in company_list.keys()):
                 # sell all of it
@@ -101,16 +106,15 @@ class portfolio:
             if (round(value_relative_to_port) > round(market_value)):
                 buy_list[ticker] = round(value_relative_to_port - market_value) - 1
             elif (round(value_relative_to_port) < round(market_value)):
-                sell_list[ticker] = round(market_value - value_relative_to_port) - 1
+                sell_list[ticker] = round(market_value - value_relative_to_port)
             else:
                 pass
-        
-        self.clean_portfolio()
-
+                
         for i in sell_list.keys():
             self.sell(i, dollar_amount=sell_list[i])
         for i in buy_list.keys():
             self.buy(i, dollar_amount=buy_list[i])
+        
 
     def buy_queried(self):
         for item in self.query:
@@ -119,6 +123,7 @@ class portfolio:
                     self.rebalance2(item.company_list)
                     self.query.remove(item)
                     print("{}: REBALANCE QUERY COMPLETE".format(self.cur_day))
+                    print("{}: PORT: {}".format(self.cur_day, self.portfolio))
                 except (KeyError, IndexError):
                     print("{}: REBALANCE STILL IN QUEUE".format(self.cur_day))
             elif isinstance(item, queried_buy):

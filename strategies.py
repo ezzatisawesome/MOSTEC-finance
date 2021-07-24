@@ -13,7 +13,7 @@ class strategies:
         self.end_date = end_date
         self.date_array = []
 
-        self.start_data_date = datetime.fromisoformat("1989-12-31")
+        self.start_data_date = datetime.fromisoformat("2006-12-31")
         self.end_data_date = datetime.fromisoformat("2019-12-31")
         self.spy_data = get_data("SPY", self.price_data, self.start_data_date, self.end_data_date)
 
@@ -43,7 +43,11 @@ class strategies:
         beta_data = {}
         for company in self.company_list.iterrows():
             ticker = company[1][0]
-            company_data = get_data(ticker, self.price_data, self.start_data_date, self.end_data_date)
+            try:
+                company_data = get_data(ticker, self.price_data, end_date_beta-timedelta(days=1), cur_date+timedelta(days=1))
+            except KeyError:
+                print("{}: COMPANY DATA ERROR".format(ticker))
+                continue
             try:
                 company_monthly_data = monthly_data2(company_data, end_date_beta, cur_date)
             except:
