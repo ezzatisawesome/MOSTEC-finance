@@ -2,7 +2,7 @@ from os import error
 from numpy.core.fromnumeric import sort
 import pandas
 from datetime import datetime, timedelta
-from dateutil import relativedelta
+from dateutil.relativedelta import relativedelta
 from finance import get_data, monthly_data2, beta_cov
 
 class strategies:
@@ -19,7 +19,7 @@ class strategies:
 
     def set_monthly(self):
         date_array = []
-        delta_time = relativedelta.relativedelta(months=1)
+        delta_time = relativedelta(months=1)
         next_month = self.start_date.replace(day=28) + timedelta(days=4)
         iter_date = next_month - timedelta(days=next_month.day)
         date_array.append(iter_date)
@@ -35,7 +35,7 @@ class strategies:
         return cur_date not in self.date_array
 
     def low_vol_1(self, cur_date: datetime):
-        end_date_beta = cur_date - relativedelta.relativedelta(years=3)
+        end_date_beta = cur_date - relativedelta(years=3)
         try:
             spy_monthly_data = monthly_data2(self.spy_data, end_date_beta, cur_date)
         except:
@@ -44,7 +44,7 @@ class strategies:
         for company in self.company_list.iterrows():
             ticker = company[1][0]
             try:
-                company_data = get_data(ticker, self.price_data, end_date_beta-timedelta(days=1), cur_date+timedelta(days=1))
+                company_data = get_data(ticker, self.price_data, end_date_beta-relativedelta(months=1), cur_date+relativedelta(months=1))
             except KeyError:
                 print("{}: COMPANY DATA ERROR".format(ticker))
                 continue

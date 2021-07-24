@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
-from operator import truediv
-from dateutil import relativedelta
-from pandas.core.base import DataError
+from dateutil.relativedelta import relativedelta
 from sklearn.linear_model import LinearRegression
 import pandas
 import numpy
@@ -20,8 +18,8 @@ def monthly_data(price_df: pandas.DataFrame, start_date: datetime, end_date: dat
     while (iter_date.weekday() != 4):
         iter_date = iter_date + timedelta(days=1)
     date_array.append(iter_date)
-    while (iter_date + relativedelta.relativedelta(months=1) < end_date):
-        iter_date = iter_date + relativedelta.relativedelta(months=1)
+    while (iter_date + relativedelta(months=1) < end_date):
+        iter_date = iter_date + relativedelta(months=1)
         date_array.append(iter_date)
     for date in date_array:
         try:
@@ -33,7 +31,7 @@ def monthly_data(price_df: pandas.DataFrame, start_date: datetime, end_date: dat
 def monthly_data2(price_df:pandas.DataFrame, start_date:datetime, end_date:datetime):
     price_df.index = pandas.to_datetime(price_df.index)
     returns_df = pandas.DataFrame()
-    delta_time = relativedelta.relativedelta(months=1)
+    delta_time = relativedelta(months=1)
     iter_date = start_date
 
     while (iter_date + delta_time < end_date):
