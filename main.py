@@ -40,7 +40,7 @@ if (__name__ == "__main__"):
     company_list_url = 'data/test1.csv'
     price_data_url = 'data/us-shareprices-daily.csv'
     company_list = pandas.read_csv(company_list_url, sep=',', header=0)
-    price_data = pandas.read_csv(price_data_url, sep=';', header=0, index_col=[0])
+    price_data = pandas.read_csv(price_data_url, sep=';', header=0, usecols=[0,2,6,7], index_col=[0])
     #balance = pandas.read_csv('data/us-balance-annual.csv', sep=';', header=0, index_col=[0,3])
     #cashflows = pandas.read_csv('data/us-cashflow-annual.csv', sep=';', header=0, index_col=[0,3])
     #income = pandas.read_csv('data/us-income-annual.csv', sep=';', header=0, index_col=[0])
