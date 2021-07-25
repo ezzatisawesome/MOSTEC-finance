@@ -25,7 +25,7 @@ def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_da
             portfolio.buy_queried() # any queried orders or rebalances should be executed
             continue
 
-        weights = strategy.low_vol_1(portfolio.cur_day)
+        weights = strategy.low_vol_2(portfolio.cur_day)
         print("{}: CASH: {}".format(dd, portfolio.cash))
         portfolio.rebalance(weights)
         print("{}: PORT: {}".format(dd, portfolio.portfolio))
@@ -38,7 +38,7 @@ def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_da
     matplotlib.pyplot.show()
 
 if (__name__ == "__main__"):
-    company_list_url = 'data/test1.csv'
+    company_list_url = 'data/constituents.csv'
     price_data_url = 'data/sp500-shareprices-daily.csv'
     company_list = pandas.read_csv(company_list_url, sep=',', header=0)
     price_data = pandas.read_csv(price_data_url, sep=';', header=0, usecols=[0,1,2,3], index_col=[0])
@@ -49,8 +49,8 @@ if (__name__ == "__main__"):
     trades_csv = 'portfolios/portfolio.csv'
     weights_json = 'portfolios/portfolio.json'
     starting_amount = 100000
-    start_date = datetime.fromisoformat('2012-05-25')
-    end_date = datetime.fromisoformat('2014-12-31')
+    start_date = datetime.fromisoformat('2009-12-30')
+    end_date = datetime.fromisoformat('2019-12-31')
     low_vol_port = portfolio(starting_amount, trades_csv, weights_json, price_data, start_date)
     low_vol_strat = strategies(company_list, price_data, start_date, end_date)
     main(low_vol_strat, low_vol_port, start_date, end_date)
