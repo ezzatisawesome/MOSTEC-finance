@@ -46,7 +46,7 @@ class strategies:
             ticker = company[1][0]
             try:
                 company_data = get_data(ticker, self.price_data, end_date_beta-relativedelta(months=1), cur_date+relativedelta(months=1))
-            except KeyError:
+            except (ValueError, KeyError, AttributeError):
                 print("{}: COMPANY DATA ERROR".format(ticker))
                 continue
             try:
