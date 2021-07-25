@@ -60,13 +60,45 @@ class strategies:
                 print("{}: {}".format(ticker, beta))
             except:
                 print("{}: BETA ERROR".format(ticker))
+        
         result = dict(filter(lambda x: x[1] >= 0.0, beta_data.items()))
         sorted_beta_data = sorted(result.items(), key=lambda x: x[1])[:round(len(result)*.2)]
-        if (len(sorted_beta_data) != 0):
-            equal_weight = 1 / len(sorted_beta_data)
-        else:
-            equal_weight = 0
-        weights = {}
-        for i in sorted_beta_data:
-            weights[i[0]] = equal_weight
+        equal_weight = 1/len(sorted_beta_data) if len(sorted_beta_data) != 0 else  0
+        weights = dict(zip([i[0] for i in sorted_beta_data], [equal_weight]*len(sorted_beta_data)))
+
+        return weights
+
+    def low_vol_2(self, cur_date: datetime):
+        end_date_beta = cur_date - relativedelta(years=3)
+        try:
+            spy_monthly_data = monthly_data2(self.spy_data, end_date_beta, cur_date)
+        except:
+            ValueError("SPY: MONTHLY DATA ERROR")
+        beta_data = {}
+        for company in self.company_list.iterrows():
+            ticker = company[1][0]
+            try:
+                company_data = get_data(ticker, self.price_data, end_date_beta-relativedelta(months=1), cur_date+relativedelta(months=1))
+            except (ValueError, KeyError, AttributeError):
+                print("{}: COMPANY DATA ERROR".format(ticker))
+                continue
+            try:
+                company_monthly_data = monthly_data2(company_data, end_date_beta, cur_date)
+            except:
+                print("{}: MONTHLY DATA ERROR".format(ticker))
+                continue
+            try:
+                beta = beta_cov(spy_monthly_data, company_monthly_data)
+                beta_data[ticker] = beta
+                print("{}: {}".format(ticker, beta))
+            except:
+                print("{}: BETA ERROR".format(ticker))
+                
+        result = dict(filter(lambda x: x[1] >= 0.0, beta_data.items()))
+        sorted_beta_data = sorted(result.items(), key=lambda x: x[1])[:round(len(result)*.2)]
+        inv_betas = list(map(lambda x: 1/x[1], sorted_beta_data))
+        sum_inv_betas = sum(inv_betas)
+        weights_data = list(map(lambda x: x/sum_inv_betas, inv_betas))
+        weights = dict(zip([i[0] for i in sorted_beta_data], weights_data))
+
         return weights

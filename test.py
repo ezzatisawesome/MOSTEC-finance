@@ -2,6 +2,7 @@ from finance import monthly_data2, get_data, beta_cov
 from datetime import date, datetime, timedelta
 from dateutil import relativedelta
 import pandas
+import numpy
 
 price_data_url = 'data/sp500-shareprices-daily.csv'
 price_data = pandas.read_csv(price_data_url, sep=';', header=0, usecols=[0,1,2,3], index_col=[0])
