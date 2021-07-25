@@ -8,8 +8,8 @@ import numpy
 
 
 def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_date:datetime):
-    value_array_file = 'portfolios/value_array.npy'
-    day_array_file = 'portfolios/day_array.npy'
+    value_array_file = 'portfolios/spy_value.npy'
+    day_array_file = 'portfolios/spy_day.npy'
     value_array = []
     day_array = []
     strategy.set_monthly()
@@ -25,7 +25,7 @@ def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_da
             portfolio.buy_queried() # any queried orders or rebalances should be executed
             continue
 
-        weights = strategy.low_vol_2(portfolio.cur_day)
+        weights = strategy.low_vol_1(portfolio.cur_day)
         print("{}: CASH: {}".format(dd, portfolio.cash))
         portfolio.rebalance(weights)
         print("{}: PORT: {}".format(dd, portfolio.portfolio))
@@ -38,7 +38,7 @@ def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_da
     matplotlib.pyplot.show()
 
 if (__name__ == "__main__"):
-    company_list_url = 'data/constituents.csv'
+    company_list_url = 'companies/spy.csv'
     price_data_url = 'data/sp500-shareprices-daily.csv'
     company_list = pandas.read_csv(company_list_url, sep=',', header=0)
     price_data = pandas.read_csv(price_data_url, sep=';', header=0, usecols=[0,1,2,3], index_col=[0])

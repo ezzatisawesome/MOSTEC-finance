@@ -62,7 +62,7 @@ class strategies:
                 print("{}: BETA ERROR".format(ticker))
         
         result = dict(filter(lambda x: x[1] >= 0.0, beta_data.items()))
-        sorted_beta_data = sorted(result.items(), key=lambda x: x[1])[:round(len(result)*.2)]
+        sorted_beta_data = sorted(result.items(), key=lambda x: x[1])[:round(len(result))]
         equal_weight = 1/len(sorted_beta_data) if len(sorted_beta_data) != 0 else  0
         weights = dict(zip([i[0] for i in sorted_beta_data], [equal_weight]*len(sorted_beta_data)))
 
