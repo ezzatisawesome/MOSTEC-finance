@@ -4,24 +4,17 @@ from dateutil import relativedelta
 import pandas
 import numpy
 
+company_list_url = 'companies/sp500.csv'
 price_data_url = 'data/sp500-shareprices-daily.csv'
-price_data = pandas.read_csv(price_data_url, sep=';', header=0, usecols=[0,1,2,3], index_col=[0])
+company_list = pandas.read_csv(company_list_url, sep=',', header=0)
+price_data = pandas.read_csv(price_data_url, sep=';', header=0, usecols=[0,1,2,3], index_col=[0,1])
+balance = pandas.read_csv('data/us-balance-annual.csv', sep=';', header=0, index_col=[0,3])
+cashflows = pandas.read_csv('data/us-cashflow-annual.csv', sep=';', header=0, index_col=[0,3])
+income = pandas.read_csv('data/us-income-annual.csv', sep=';', header=0, index_col=[0,3])
 
-end_date = datetime.fromisoformat("2012-05-30")
-start_date = end_date - relativedelta.relativedelta(years=3)
+year = 2010
+ticker = 'MMM'
 
-#spy_df = get_data('spy', price_data, datetime.fromisoformat("2000-01-01"), datetime.fromisoformat("2020-01-02"))
-#goog_df = get_data('abt', price_data, datetime.fromisoformat("2000-01-01"), datetime.fromisoformat("2020-01-02"))
+year_return = (price_data.loc[ticker, '{}-12-31'.format(year)]['Close'] / price_data.loc[ticker, '{}-12-31'.format(year-1)]['Close']) - 1
 
-
-spy_df = get_data('spy', price_data, start_date-relativedelta.relativedelta(months=1), end_date+relativedelta.relativedelta(months=1))
-mmm_df = get_data('now', price_data, start_date-relativedelta.relativedelta(months=1), end_date+relativedelta.relativedelta(months=1))
-
-#print(spy_df.tail())
-print(mmm_df.tail())
-
-spy_df_monthly = monthly_data2(spy_df, start_date, end_date)
-goog_df_monthly = monthly_data2(mmm_df, start_date, end_date)
-beta_cov(spy_df_monthly, goog_df_monthly)
-
-print(beta_cov(spy_df_monthly, goog_df_monthly))
+print(year_return)
