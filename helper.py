@@ -1,5 +1,7 @@
 import pandas
 import csv
+from datetime import timedelta
+from finance import get_data, monthly_data2
 
 def select_prices():
     price_data_url = 'data/us-shareprices-daily.csv'
@@ -34,29 +36,32 @@ def select_fundamentals():
 
     company_list = pandas.read_csv(company_list_url, sep=',', header=0)
 
-    output_file =  open('sp500-debt_ratio-3year.csv', mode='w')
+    output_file =  open('sp500-eps-3year.csv', mode='w')
     output_file_writer = csv.writer(output_file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     
-    output_file_writer.writerow(['debt_ratio', 'year_return'])
+    output_file_writer.writerow(['eps', 'year_return'])
 
     for year in range(2010, 2020):
         for company in company_list.iterrows():
             ticker = company[1][0]
+            
             try:
                 year_return = round((price_data.loc[ticker, '{}-12-31'.format(year)]['Adj. Close'] / price_data.loc[ticker, '{}-12-31'.format(year-3)]['Adj. Close']) - 1, 3)
             except:
                 year_return = None
                 print('{}: PRICE ERROR'.format(ticker))
-            """
+            
+
             try:
                 eps1 = round(income.loc[ticker, year]['Net Income'] / balance.loc[ticker, year]['Shares (Basic)'], 3)
-                eps2 = round(income.loc[ticker, year-11]['Net Income'] / balance.loc[ticker, year-1]['Shares (Basic)'], 3)
+                eps2 = round(income.loc[ticker, year-1]['Net Income'] / balance.loc[ticker, year-1]['Shares (Basic)'], 3)
                 eps3 = round(income.loc[ticker, year-2]['Net Income'] / balance.loc[ticker, year-2]['Shares (Basic)'], 3)
                 eps = sum([eps1, eps2, eps3])
             except:
                 eps = None
                 print('{}: EPS ERROR'.format(ticker))
             
+            """
             
             try:
                 debt_to_equity1 = round(balance.loc[ticker, year]['Total Liabilities'] / (balance.loc[ticker, year]['Total Assets'] - balance.loc[ticker, year]['Total Liabilities']), 3)
@@ -93,7 +98,7 @@ def select_fundamentals():
             except:
                 current_ratio = None
                 print('{}: CURRENT RATIO ERROR'.format(ticker))
-            """
+            
 
             try:
                 debt_ratio1 = round(balance.loc[ticker, year]['Total Liabilities'] / balance.loc[ticker, year]['Total Assets'], 3)
@@ -103,9 +108,9 @@ def select_fundamentals():
             except:
                 debt_ratio = None
                 print('{}: DEBT RATIO ERROR'.format(ticker))
-            
-            if (debt_ratio is not None and year_return is not None):
-                output_file_writer.writerow([debt_ratio, year_return])
+            """
+            if (year_return is not None and eps is not None):
+                output_file_writer.writerow([eps, year_return])
 
 
 if (__name__ == "__main__"):

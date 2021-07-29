@@ -12,13 +12,13 @@ def remove_outlier(df_in: pandas.DataFrame, col_name: str):
     df_out = df_in.loc[(df_in[col_name] > fence_low) & (df_in[col_name] < fence_high)]
     return df_out
 
-sp_data = pandas.read_csv('data/sp500-roa-3year.csv', delimiter=';', header=[0])
+sp_data = pandas.read_csv('data/sp500-eps-3year.csv', delimiter=';', header=[0])
 sp_data.dropna()
 
 
-filter1 = remove_outlier(sp_data, 'roa')
+filter1 = remove_outlier(sp_data, 'eps')
 filter2 = remove_outlier(filter1, 'year_return')
-x = filter2['roa'].values.reshape(-1, 1)
+x = filter2['eps'].values.reshape(-1, 1)
 y = filter2['year_return'].values
 
 reg = LinearRegression()
@@ -34,7 +34,7 @@ print('Coefficients: \n', reg.coef_)
 #print('Coefficient of determination: '.format(r2_score(y_test, y_pred))
 
 # Plot outputs
-plot.xlabel('3 Year ROA')
+plot.xlabel('3 Year EPS')
 plot.ylabel('3 Year Returns')
 plot.scatter(x, y,  color='black')
 plot.plot(x, reg.predict(x), color='blue', linewidth=2)
