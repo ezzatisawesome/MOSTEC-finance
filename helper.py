@@ -20,6 +20,40 @@ def select_prices():
             pass
     price_data2.to_csv('sp500-shareprices-daily.csv', sep=';', header=False, index=True, index_label=False, mode='w')
 
+def select_balance():
+    balance_data_url = 'data/us-balance-annual.csv'
+    balance_data = pandas.read_csv(balance_data_url, sep=';', header=0, index_col=[0])
+    balance_data2 = pandas.DataFrame()
+    company_list_url = 'companies/sp500.csv'
+    company_list = pandas.read_csv(company_list_url, sep=',', header=0)
+    for company in company_list.iterrows():
+        ticker = company[1][0]
+        print(ticker)
+        try:
+            dataaa = balance_data.loc[ticker]
+            print(dataaa.head())
+            balance_data2 = balance_data2.append(dataaa)
+        except KeyError:
+            pass
+    balance_data2.to_csv('sp500-shareprices-daily.csv', sep=';', header=False, index=True, index_label=False, mode='w')
+
+def select_income():
+    income_data_url = 'data/us-balance-annual.csv'
+    income_data = pandas.read_csv(income_data_url, sep=';', header=0, index_col=[0])
+    income_data2 = pandas.DataFrame()
+    company_list_url = 'companies/sp500.csv'
+    company_list = pandas.read_csv(company_list_url, sep=',', header=0)
+    for company in company_list.iterrows():
+        ticker = company[1][0]
+        print(ticker)
+        try:
+            dataaa = income_data.loc[ticker]
+            print(dataaa.head())
+            income_data2 = income_data2.append(dataaa)
+        except KeyError:
+            pass
+    income_data2.to_csv('sp500-income-annual.csv', sep=';', header=False, index=True, index_label=False, mode='w')
+
 
 #eps - net income / shares basic
 #p/e - share price/ net income
@@ -114,4 +148,4 @@ def select_fundamentals():
 
 
 if (__name__ == "__main__"):
-    select_fundamentals()
+    select_balance()
