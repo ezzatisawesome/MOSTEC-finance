@@ -38,17 +38,17 @@ def main(strategy: strategies, portfolio: portfolio, start_date:datetime, end_da
     matplotlib.pyplot.show()
 
 if (__name__ == "__main__"):
-    company_list_url = 'companies/spy.csv'
+    company_list_url = 'companies/sp500.csv'
     price_data_url = 'data/sp500-shareprices-daily.csv'
     company_list = pandas.read_csv(company_list_url, sep=',', header=0)
     price_data = pandas.read_csv(price_data_url, sep=';', header=0, usecols=[0,1,2,3], index_col=[0])
-    balance = pandas.read_csv('data/us-balance-annual.csv', sep=';', header=0, index_col=[0,3])
-    income = pandas.read_csv('data/us-income-annual.csv', sep=';', header=0, index_col=[0])
+    balance = pandas.read_csv('data/sp500-balance-annual.csv', sep=';', header=0, index_col=[0,3])
+    income = pandas.read_csv('data/sp500-income-annual.csv', sep=';', header=0, index_col=[0,3])
 
     trades_csv = 'portfolios/portfolio.csv'
     weights_json = 'portfolios/portfolio.json'
     starting_amount = 100000
-    start_date = datetime.fromisoformat('2009-12-30')
+    start_date = datetime.fromisoformat('2012-12-30')
     end_date = datetime.fromisoformat('2019-12-31')
     low_vol_port = portfolio(starting_amount, trades_csv, weights_json, price_data, start_date)
     low_vol_strat = strategies(company_list, price_data, balance, income, start_date, end_date)

@@ -114,6 +114,7 @@ class strategies:
         beta_data = {}
         for company in self.company_list.iterrows():
             ticker = company[1][0]
+            year = cur_date.year
             try:
                 company_data = get_data(ticker, self.price_data, end_date_beta-relativedelta(months=1), cur_date+relativedelta(months=1))
             except (ValueError, KeyError, AttributeError):
@@ -125,7 +126,6 @@ class strategies:
                 print("{}: MONTHLY DATA ERROR".format(ticker))
                 continue
             try:
-                year = cur_date.year
                 roe1 = round(self.income_data.loc[ticker, year]['Net Income'] / (self.balance_data.loc[ticker, year]['Total Assets'] - self.balance_data.loc[ticker, year]['Total Liabilities']), 3)
                 roe2 = round(self.income_data.loc[ticker, year-1]['Net Income'] / (self.balance_data.loc[ticker, year-1]['Total Assets'] - self.balance_data.loc[ticker, year-1]['Total Liabilities']), 3)
                 roe3 = round(self.income_data.loc[ticker, year-2]['Net Income'] / (self.balance_data.loc[ticker, year-2]['Total Assets'] - self.balance_data.loc[ticker, year-2]['Total Liabilities']), 3)

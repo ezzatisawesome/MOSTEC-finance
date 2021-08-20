@@ -12,14 +12,15 @@ spy_value_file = 'portfolios/spy_value.npy'
 
 weighted_day_array = np.load(weighted_day_file, allow_pickle=True)
 weighted_value_array = np.load(weighted_value_file, allow_pickle=True)
-matplotlib.pyplot.plot(weighted_day_array, weighted_value_array, 'c')
+matplotlib.pyplot.plot(weighted_day_array, weighted_value_array, 'c', label='Beta Weighted')
 
 equal_spy_day_array = np.load(equal_day_file, allow_pickle=True)
 equal_spy_value_array = np.load(equal_value_file, allow_pickle=True)
-matplotlib.pyplot.plot(equal_spy_day_array, equal_spy_value_array, 'b')
+matplotlib.pyplot.plot(equal_spy_day_array, equal_spy_value_array, 'b', label='Equal Weighted')
 
 spy_day_array = np.load(spy_day_file, allow_pickle=True)
 spy_value_array = np.load(spy_value_file, allow_pickle=True)
-matplotlib.pyplot.plot(spy_day_array, spy_value_array, 'r')
+matplotlib.pyplot.plot(spy_day_array, spy_value_array, 'r', label='SP500')
 
+matplotlib.pyplot.legend()
 matplotlib.pyplot.show()
